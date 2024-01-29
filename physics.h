@@ -8,7 +8,7 @@
 
 class Physics {
 public:
-    struct params {
+    struct Params {
         float g = 9.8f;
         float R = 8.31f;
         float T = 273.0f;
@@ -17,14 +17,16 @@ public:
         float d = 0.1;
         float mass = 0.1;
     };
-    struct model {
+    struct Model {
         open3d::geometry::TriangleMesh mesh;
-        Eigen::VectorXd
+        Eigen::VectorXf vels;
     };
+
+    Physics(Model &model);
 
 
 private:
-
+    Model& _model;
 
 
 };
