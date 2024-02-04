@@ -9,23 +9,35 @@
 class Physics {
 public:
     struct Params {
-        float g = 9.8f;
-        float R = 8.31f;
-        float T = 273.0f;
-        float P = 1e5f;
-        float k = 1.0;
-        float d = 0.1;
-        float mass = 0.1;
+        double g = 9.8f;
+        double R = 8.31f;
+        double T = 273.0f;
+        double P = 1e5f;
+        double k = 1.0;
+        double d = 0.1;
+        double mass = 0.1;
     };
     struct Model {
         open3d::geometry::TriangleMesh mesh;
-        Eigen::VectorXf vels;
+        Eigen::VectorXd vels;
     };
 
     Physics(Model &model);
 
 
+    struct PVS {
+        double P;
+        double V;
+        Eigen::VectorXd S;
+    };
+
 private:
+    PVS countPVS(const Model &model);
+
+    Eigen::MatrixXd getSpringForce(const Model &model);
+
+
+
     Model& _model;
 
 

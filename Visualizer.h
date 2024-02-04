@@ -5,8 +5,10 @@
 
 class Visualizer {
 public:
-    Visualizer(const Physics::Model &model);
-    void init();
+    Visualizer(Physics::Model &model,
+               const std::shared_ptr<open3d::geometry::TriangleMesh>& mesh);
+    void init(
+            const std::shared_ptr<open3d::geometry::TriangleMesh>& mesh);
 
 private:
     const Physics::Model &_model;
