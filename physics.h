@@ -4,26 +4,21 @@
 
 #include <open3d/Open3D.h>
 #include <eigen3/Eigen/Eigen>
+#include <utility>
 
 
 class Physics {
 public:
     struct Params {
-        double g = 9.8f;
-        double R = 8.31f;
-        double T = 273.0f;
-        double P = 1e5f;
+        double g = 9.8;
+        double R = 8.31;
+        double T = 273.0;
+        double P = 1e5;
         double k = 1.0;
         double d = 0.1;
         double mass = 0.1;
+        double dt = 0.01;
     };
-    struct Model {
-        open3d::geometry::TriangleMesh mesh;
-        Eigen::VectorXd vels;
-    };
-
-    Physics(Model &model);
-
 
     struct PVS {
         double P;
@@ -31,16 +26,63 @@ public:
         Eigen::VectorXd S;
     };
 
+    struct Model {
+        open3d::geometry::TriangleMesh mesh;
+        PVS pvs;
+    };
+
+    struct State {
+        Eigen::MatrixXd coords;
+        Eigen::MatrixXd vels;
+
+        explicit State(
+                Eigen::MatrixXd coords_in = Eigen::Matrix<double, 1, 1>::Zero(),
+                Eigen::MatrixXd vels_in = Eigen::Matrix<double, 1, 1>::Zero())
+                : coords(std::move(coords_in)),
+                  vels(std::move(vels_in)) {};
+
+        inline State operator+(const State &b) const {
+            return State(b.coords + coords, b.vels + vels);
+        }
+
+        inline State operator-(const State &b) const {
+            return State(coords - b.coords, vels - b.vels);
+        }
+
+        inline State operator*(const double &b) const {
+            return State(b * coords, b * vels);
+        }
+
+        inline State operator/(const double &b) const {
+            return State(coords / b, vels / b);
+        }
+
+    };
+
+    Physics(Model &model);
+
+    static void countPVS(Model &model);
+
 private:
-    PVS countPVS(const Model &model);
-
-    Eigen::MatrixXd getSpringForce(const Model &model);
 
 
+    static Eigen::MatrixXd
+    getSpringForce(const Model &model,
+                   const Eigen::MatrixXd &coords);
 
-    Model& _model;
 
+    Model &_model;
+    State _state;
 
+    State
+    rightSide(const State &state);
+
+    State getInitState(const Model &model);
+
+    State integrateIter(const State &state);
+
+public:
+    void solve(size_t iter_num);
 };
 
 
