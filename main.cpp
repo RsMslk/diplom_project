@@ -6,7 +6,7 @@
 
 int main() {
     std::shared_ptr<open3d::geometry::TriangleMesh> mesh = open3d::geometry::TriangleMesh::CreateIcosahedron(
-            0.5);
+            1.0);
     mesh->ComputeVertexNormals();
     std::shared_ptr<Model> _model = std::make_shared<Model>(mesh);
 

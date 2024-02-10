@@ -111,6 +111,28 @@ Physics::getSpringDamping(const Model &model,
 
 }
 
+Eigen::MatrixXd
+Physics::getPressureForce(const Model &model) {
+    model.mesh_ptr->ComputeVertexNormals(true);
+    model.mesh_ptr->ComputeTriangleNormals(true);
+    const auto &normals = model.mesh_ptr->triangle_normals_;
+    const auto &triangles = model.mesh_ptr->triangles_;
+    const auto &pvs = model.pvs;
+    double dp = model.pvs.P - Params().P;
+    Eigen::Matrix<double, 3, Eigen::Dynamic> F;
+    F.resize(3, model.mesh_ptr->vertices_.size());
+    F.setZero();
+    for (std::size_t j = 0; j < triangles.size(); ++j) {
+        F.col(triangles.at(j)(0)) +=
+                pvs.S(j) * normals.at(j) * dp / 3;
+        F.col(triangles.at(j)(1)) +=
+                pvs.S(j) * normals.at(j) * dp / 3;
+        F.col(triangles.at(j)(2)) +=
+                pvs.S(j) * normals.at(j) * dp / 3;
+    }
+    return F;
+}
+
 
 Eigen::MatrixXd
 Physics::getSpringForce(const Model &model,
@@ -124,13 +146,16 @@ Physics::getSpringForce(const Model &model,
     for (const auto &triangle: triangles) {
         Eigen::Vector3d edge_0 = coords.col(triangle(0)) -
                                  coords.col(triangle(1));
-        edge_0 = edge_0.normalized() * (edge_0.norm() - params.edge_rest);
+        edge_0 = edge_0.normalized() *
+                 (edge_0.norm() - params.edge_rest);
         Eigen::Vector3d edge_1 = coords.col(triangle(1)) -
                                  coords.col(triangle(2));
-        edge_1 = edge_1.normalized() * (edge_1.norm() - params.edge_rest);
+        edge_1 = edge_1.normalized() *
+                 (edge_1.norm() - params.edge_rest);
         Eigen::Vector3d edge_2 = coords.col(triangle(2)) -
                                  coords.col(triangle(0));
-        edge_2 = edge_2.normalized() * (edge_2.norm() - params.edge_rest);
+        edge_2 = edge_2.normalized() *
+                 (edge_2.norm() - params.edge_rest);
         F.col(triangle(0)) += params.k * (edge_2 - edge_0);
         F.col(triangle(1)) += params.k * (edge_0 - edge_1);
         F.col(triangle(2)) += params.k * (edge_1 - edge_2);
@@ -144,7 +169,6 @@ Eigen::MatrixXd Physics::getGravForce(const Model &model,
                                       const Eigen::MatrixXd &coords) {
     Params params;
     auto mesh = model.mesh_ptr;
-    const auto &triangles = mesh->triangles_;
     Eigen::Matrix<double, 3, Eigen::Dynamic> F;
     F.resize(3, coords.cols());
     F.setZero();
@@ -158,13 +182,15 @@ Eigen::MatrixXd Physics::getGravForce(const Model &model,
 //coords, vels
 State
 Physics::rightSide(const State &state) {
+    countPVS(_model);
     Eigen::MatrixXd vels = state.vels;
     Eigen::MatrixXd coords = state.coords;
     Eigen::MatrixXd r_dot = vels;
     Eigen::MatrixXd v_dot = getSpringForce(_model, coords) +
                             getSpringDamping(_model,
                                              state) +
-                            getGravForce(_model, coords);
+                            getGravForce(_model, coords) +
+                            getPressureForce(_model);
     return State(r_dot, v_dot);
 }
 

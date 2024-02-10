@@ -42,6 +42,8 @@ public:
     Eigen::MatrixXd
     getSpringDamping(const Model &model,
                      const State &state);
+
+    Eigen::MatrixXd getPressureForce(const Model &model);
 };
 
 

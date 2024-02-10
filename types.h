@@ -3,11 +3,11 @@
 #include <eigen3/Eigen/Eigen>
 
 struct Params {
-    double g = 9.8;
+    double g = 1.0;
     double R = 8.31;
     double T = 273.0;
     //Внешнее давление
-    double P = 1039.85;
+    double P = 129.981;
     double k = 1.0;
     double d = 0.1;
     double mass = 0.1;

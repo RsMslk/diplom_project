@@ -38,6 +38,7 @@ Visualizer::registerCallbackFunction(std::function<bool(
 
 void Visualizer::update(
         std::shared_ptr<open3d::geometry::TriangleMesh> &mesh) {
+    std::cout << mesh->GetVolume() << '\n';
     _visualizer.UpdateGeometry(mesh);
     _visualizer.PollEvents();
     _visualizer.UpdateRender();
