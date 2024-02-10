@@ -1,6 +1,6 @@
 #include "Visualizer.h"
 
-Visualizer::Visualizer(Physics::Model &model)
+Visualizer::Visualizer(Model &model)
         :
         _model(model),
         _visualizer(

@@ -6,7 +6,7 @@ Physics::Physics(Model &model) : _model(model) {
     countPVS(model);
 }
 
-Physics::State Physics::getInitState(const Model &model) {
+State Physics::getInitState(const Model &model) {
     const auto &mesh = model.mesh_ptr;
     const auto &vertices = mesh->vertices_;
     Eigen::MatrixXd coords;
@@ -156,7 +156,7 @@ Eigen::MatrixXd Physics::getGravForce(const Model &model,
 
 
 //coords, vels
-Physics::State
+State
 Physics::rightSide(const State &state) {
     Eigen::MatrixXd vels = state.vels;
     Eigen::MatrixXd coords = state.coords;
@@ -168,8 +168,8 @@ Physics::rightSide(const State &state) {
     return State(r_dot, v_dot);
 }
 
-Physics::State
-Physics::integrateIter(const Physics::State &state) {
+State
+Physics::integrateIter(const State &state) {
     Params params;
     const State k_1 = rightSide(state);
     const State k_2 = rightSide(
@@ -183,7 +183,7 @@ Physics::integrateIter(const Physics::State &state) {
            6;
 }
 
-void checkFloorCollision(Physics::State &state) {
+void checkFloorCollision(State &state) {
 
     for (size_t j = 0; j < state.coords.cols(); ++j) {
         if (state.coords(2, j) < -10.0) {

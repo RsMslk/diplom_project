@@ -1,11 +1,11 @@
 #ifndef MAIN_VISUALIZER_H
 #define MAIN_VISUALIZER_H
 
-#include "physics.h"
+#include "types.h"
 
 class Visualizer {
 public:
-    Visualizer(Physics::Model &model);
+    Visualizer(Model &model);
 
     void init(
             const std::shared_ptr<open3d::geometry::TriangleMesh>& mesh);
@@ -17,7 +17,7 @@ public:
             std::shared_ptr<open3d::geometry::TriangleMesh> &mesh);
 
 private:
-    const Physics::Model &_model;
+    const Model &_model;
     open3d::visualization::VisualizerWithCustomAnimation _visualizer;
 
 
