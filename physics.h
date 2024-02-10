@@ -14,7 +14,7 @@ public:
         double R = 8.31;
         double T = 273.0;
         double P = 1e5;
-        double k = 1.0;
+        double k = 100.0;
         double d = 0.1;
         double mass = 0.1;
         double dt = 0.01;
@@ -27,8 +27,16 @@ public:
     };
 
     struct Model {
-        open3d::geometry::TriangleMesh mesh;
+        std::shared_ptr<open3d::geometry::TriangleMesh> mesh_ptr;
         PVS pvs;
+
+        explicit Model(
+                std::shared_ptr<open3d::geometry::TriangleMesh> mesh_ptr_in = nullptr,
+                PVS pvs_in = PVS(
+                        {.P = 0.0, .V = 0.0, .S = Eigen::Vector3d::Zero()}))
+                : mesh_ptr(std::move(mesh_ptr_in)),
+                  pvs(pvs_in) {
+        };
     };
 
     struct State {
@@ -83,6 +91,9 @@ private:
 
 public:
     void solve(size_t iter_num);
+
+    Eigen::MatrixXd getGravForce(const Model &model,
+                                 const Eigen::MatrixXd &coords);
 };
 
 

@@ -3,18 +3,28 @@
 #include <eigen3/Eigen/Eigen>
 #include "physics.h"
 #include "Visualizer.h"
+#include "thread"
 
 int main() {
     std::shared_ptr<open3d::geometry::TriangleMesh> mesh = open3d::geometry::TriangleMesh::CreateIcosahedron(
             1.0);
     mesh->ComputeVertexNormals();
-    Physics::Model _model = {.mesh = *mesh};
-    Physics::countPVS(_model);
+    std::shared_ptr<Physics::Model> _model = std::make_shared<Physics::Model>(mesh);
 
-    Physics core(_model);
-    core.solve(1000);
-    Visualizer _visualizer(_model,
-                           mesh);
+    Physics core(*_model);
+
+    Visualizer _visualizer(*_model);
+
+    std::function<bool(open3d::visualization::Visualizer* vis)> need_to_update = [&](open3d::visualization::Visualizer* vis){
+        std::cout << " call back";
+        return true;
+    };
+
+//    _visualizer.registerCallbackFunction(need_to_update);
+    for (int j = 0; j < 1000; ++ j) {
+        core.solve(1);
+        _visualizer.update(mesh);
+    }
     std::cout << " Hello World\n";
     return 0;
 }

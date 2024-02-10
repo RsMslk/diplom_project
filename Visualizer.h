@@ -5,14 +5,21 @@
 
 class Visualizer {
 public:
-    Visualizer(Physics::Model &model,
-               const std::shared_ptr<open3d::geometry::TriangleMesh>& mesh);
+    Visualizer(Physics::Model &model);
+
     void init(
             const std::shared_ptr<open3d::geometry::TriangleMesh>& mesh);
 
+    void registerCallbackFunction(std::function<bool(
+            open3d::visualization::Visualizer *)> &callback);
+
+    void update(
+            std::shared_ptr<open3d::geometry::TriangleMesh> &mesh);
+
 private:
     const Physics::Model &_model;
-    open3d::visualization::VisualizerWithKeyCallback _visualizer;
+    open3d::visualization::VisualizerWithCustomAnimation _visualizer;
+
 
 };
 

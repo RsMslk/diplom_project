@@ -7,8 +7,8 @@ Physics::Physics(Model &model) : _model(model) {
 }
 
 Physics::State Physics::getInitState(const Model &model) {
-    const auto &mesh = model.mesh;
-    const auto &vertices = mesh.vertices_;
+    const auto &mesh = model.mesh_ptr;
+    const auto &vertices = mesh->vertices_;
     Eigen::MatrixXd coords;
     coords.resize(3, vertices.size());
     coords.setZero();
@@ -24,15 +24,15 @@ Physics::State Physics::getInitState(const Model &model) {
 
 void Physics::countPVS(Model &model) {
     Params params;
-    auto mesh = model.mesh;
-    double V = mesh.GetVolume();
+    auto mesh = model.mesh_ptr;
+    double V = mesh->GetVolume();
     if (V < 1e-3) {
         throw;
     }
     double P = params.R * params.T / V;
     Eigen::VectorXd S;
-    const auto &vertices = mesh.vertices_;
-    const auto &triangles = mesh.triangles_;
+    const auto &vertices = mesh->vertices_;
+    const auto &triangles = mesh->triangles_;
 
     S.resize(triangles.size());
     for (size_t j = 0; j < triangles.size(); ++j) {
@@ -54,8 +54,8 @@ Eigen::MatrixXd
 Physics::getSpringForce(const Model &model,
                         const Eigen::MatrixXd &coords) {
     Params params;
-    auto mesh = model.mesh;
-    const auto &triangles = mesh.triangles_;
+    auto mesh = model.mesh_ptr;
+    const auto &triangles = mesh->triangles_;
     Eigen::Matrix<double, 3, Eigen::Dynamic> F;
     F.resize(3, coords.cols());
     F.setZero();
@@ -71,10 +71,24 @@ Physics::getSpringForce(const Model &model,
         F.col(triangle(2)) += params.k * (edge_1 - edge_2);
     }
     F = F / 2;
-    std::cout << F.rows() << " X " << F.cols() << '\n';
     // F = 3 X 12
     return F;
 }
+
+Eigen::MatrixXd Physics::getGravForce(const Model &model,
+                                      const Eigen::MatrixXd &coords) {
+    Params params;
+    auto mesh = model.mesh_ptr;
+    const auto &triangles = mesh->triangles_;
+    Eigen::Matrix<double, 3, Eigen::Dynamic> F;
+    F.resize(3, coords.cols());
+    F.setZero();
+    for (size_t j = 0; j < F.cols(); ++j) {
+        F.col(j) = Eigen::Vector3d(0.0, 0.0 , -params.g);
+    }
+    return F;
+}
+
 
 //coords, vels
 Physics::State
@@ -82,7 +96,8 @@ Physics::rightSide(const State &state) {
     Eigen::MatrixXd vels = state.vels;
     Eigen::MatrixXd coords = state.coords;
     Eigen::MatrixXd r_dot = vels;
-    Eigen::MatrixXd v_dot = getSpringForce(_model, coords);
+    Eigen::MatrixXd v_dot = getSpringForce(_model, coords) +
+                            getGravForce(_model, coords);
     return State(r_dot, v_dot);
 }
 
@@ -97,15 +112,29 @@ Physics::integrateIter(const Physics::State &state) {
     return state + (k_1 + k_2 * 2.0 + k_3 * 2.0 + k_4) * params.dt / 6;
 }
 
+void checkFloorCollision(Physics::State &state) {
+
+    for (size_t j = 0; j < state.coords.cols(); ++j) {
+        if (state.coords(2, j) < -50.0) {
+            std::cout << " COLLISION\n";
+            state.vels(2, j) = -state.vels(2, j);
+        }
+    }
+}
+
+
 void Physics::solve(size_t iter_num) {
     State current_state = _state;
-    for ( std::size_t i = 0; i < iter_num; ++ i){
+    for (std::size_t i = 0; i < iter_num; ++i) {
         current_state = integrateIter(current_state);
-    }
-    _state = current_state;
-    auto & vertices = _model.mesh.vertices_;
-    for (std::size_t i = 0; i < vertices.size(); ++i){
-        vertices.at(i) = current_state.coords.col(i);
+        checkFloorCollision(current_state);
+        _state = current_state;
+        auto &vertices = _model.mesh_ptr->vertices_;
+        for (std::size_t i = 0; i < vertices.size(); ++i) {
+            _model.mesh_ptr->vertices_.at(
+                    i) = current_state.coords.col(i);
+        }
+        std::cout << _model.mesh_ptr->vertices_.at(0).transpose() << '\n';
     }
 
 }
