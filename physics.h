@@ -14,8 +14,8 @@ public:
         double R = 8.31;
         double T = 273.0;
         double P = 1e5;
-        double k = 100.0;
-        double d = 0.1;
+        double k = 1.0;
+        double d = 1.0;
         double mass = 0.1;
         double dt = 0.01;
     };
@@ -94,6 +94,10 @@ public:
 
     Eigen::MatrixXd getGravForce(const Model &model,
                                  const Eigen::MatrixXd &coords);
+
+    Eigen::MatrixXd
+    getSpringDamping(const Model &model,
+                     const State &state);
 };
 
 
