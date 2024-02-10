@@ -11,6 +11,8 @@ int main() {
     mesh->ComputeVertexNormals();
     std::shared_ptr<Physics::Model> _model = std::make_shared<Physics::Model>(mesh);
 
+    Physics::countPVS(*_model);
+    std::cout << " P " <<_model->pvs.P << " V " << _model->pvs.V << " S " << _model->pvs.S << '\n';
     Physics core(*_model);
 
     Visualizer _visualizer(*_model);

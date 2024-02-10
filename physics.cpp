@@ -124,10 +124,13 @@ Physics::getSpringForce(const Model &model,
     for (const auto &triangle: triangles) {
         Eigen::Vector3d edge_0 = coords.col(triangle(0)) -
                                  coords.col(triangle(1));
+        edge_0 = edge_0.normalized() * (edge_0.norm() - params.edge_rest);
         Eigen::Vector3d edge_1 = coords.col(triangle(1)) -
                                  coords.col(triangle(2));
+        edge_1 = edge_1.normalized() * (edge_1.norm() - params.edge_rest);
         Eigen::Vector3d edge_2 = coords.col(triangle(2)) -
                                  coords.col(triangle(0));
+        edge_2 = edge_2.normalized() * (edge_2.norm() - params.edge_rest);
         F.col(triangle(0)) += params.k * (edge_2 - edge_0);
         F.col(triangle(1)) += params.k * (edge_0 - edge_1);
         F.col(triangle(2)) += params.k * (edge_1 - edge_2);

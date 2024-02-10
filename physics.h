@@ -13,11 +13,13 @@ public:
         double g = 9.8;
         double R = 8.31;
         double T = 273.0;
-        double P = 1e5;
+        //Внешнее давление
+        double P = 1039.85;
         double k = 1.0;
-        double d = 1.0;
+        double d = 0.1;
         double mass = 0.1;
         double dt = 0.01;
+        double edge_rest = 1.0;
     };
 
     struct PVS {
